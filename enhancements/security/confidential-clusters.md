@@ -51,18 +51,28 @@ scalability and flexibility, concerns around data confidentiality and integrity,
 from the cloud provider itself or other unauthorized parties, remain a
 significant barrier for highly regulated industries.
 
-Traditional cloud deployments expose workload memory and disk content to the
-host, creating a potential attack surface. Confidential Clusters address this by
-ensuring all OpenShift nodes run on CVMs, automatically encrypting and
-protecting, from the host, memory of workloads and management services as well
-as the content on the disk.
+**Confidential Computing** protects data in use by processing it within a
+hardware-isolated Trusted Execution Environment (TEE).
+Confidential Virtual Machines (CVMs), are such TEEs, utilizing hardware
+technologies like AMD SEV-SNP and Intel TDX, to strictly isolate the VM's
+resources so that even the privileged hypervisor cannot view or modify the
+active workload.
 
-It is also required to be able to attest with high confidence that those
-protections are effectively in place on the cloud provider’s
-infrastructure. Thus in Confidential Clusters, all nodes of the cluster are
-asked to send hardware signed quotes to a remote attestation server to validate
-the confidential computing features enabled for the virtual machines and to
-verify the version of the operating system that is booted.
+Trust in this environment is established via Remote Attestation.
+This is a cryptographic process where the hardware generates a digitally signed
+**attestation quote** proving that the CVM is running on genuine, security-
+enabled hardware.
+Relying parties verify this quote before releasing sensitive secrets to
+the protected environment.
+
+Confidential Clusters address these concerns by ensuring all OpenShift
+nodes run on CVMs, automatically encrypting and protecting, from the host,
+memory of workloads and management services as well as the content on the disk.
+
+In Confidential Clusters, all the nodes are required to go through
+remote attestation, by sending hardware signed quotes to a remote attestation
+server to validate the confidential computing features enabled for the virtual
+machines and to verify the version of the operating system that is booted.
 
 Those added security layers enhance the security posture of OpenShift
 deployments, making it a viable platform for even the most sensitive
@@ -303,6 +313,29 @@ be added to
   extended to support:
   * configuring the Clevis trustee pin
   * enable fetching remote config after remote attestation
+
+#### Programming Languages
+The Confidential Cluster Operator is written in Rust.
+
+##### Why was Rust chosen
+There are several reasons for chosing Rust, including
+  * Rust is more secure, supposedly
+  * Rust code has less bugs, supposedly
+  * The Confidential Cluster Operator is an important piece of
+    Confidential Clusters. When it's down nodes can not be re/started.
+
+##### Making Confidential Cluster Operator fit OpenShift
+The following steps are to be taken to make cocl-operator fit OpenShift
+  * APIs and CRDs are to be written in Go
+  * When the operator is built, the APIs/CRDs are translated to Rust
+  * The system openssl library is to be used
+
+#### Integration with Openshift tooling
+To make Confidential Cluster Operator a first citizen in the Openshift
+echosystem, interfaces are written in Go and generated with OpenShift tools.
+
+When the operator is built, the interfaces are converted to Rust. COPY FROM Jakob
+
 
 ## Topology Considerations
 
